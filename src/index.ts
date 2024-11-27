@@ -3,9 +3,9 @@ import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import { Server } from 'socket.io';
+// import { Server } from 'socket.io';
 import { createServer } from 'http';
-import Redis from 'ioredis';
+// import Redis from 'ioredis';
 import rateLimit from 'express-rate-limit';
 
 
@@ -21,7 +21,7 @@ const app = express();
 
 const httpsServer = createServer(app)
 
-const redisClient = new Redis(process.env.REDIS_URL || "");
+// const redisClient = new Redis(process.env.REDIS_URL || "");
 const PORT = process.env.Port || 5000
 
 const uploadLimiter = rateLimit({
