@@ -34,7 +34,6 @@ export function initializeSocket(httpServer: HttpServer) {
         return next(new Error('Authentication error: User not found'));
       }
 
-      // Attach user to socket
       socket.data = { user };
       next();
     } catch (error) {
