@@ -17,7 +17,6 @@ export const videoProcessingWorker = new Worker('video-processing', async (job) 
     const { videoId, localFilePath } = job.data;
   
     try {
-      // Transcode video to multiple qualities
       const qualities = [
         { resolution: '240p', videoBitrate: '400k' },
         { resolution: '480p', videoBitrate: '1000k' },
