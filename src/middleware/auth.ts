@@ -71,7 +71,7 @@ export const authenticateSocket = async (socket: Socket, next: (err?: Error) => 
       if (!user) {
         return next(new Error('Authentication error: User not found'));
       }
-  
+
       socket.data.user = user;
       next();
     } catch (error) {
