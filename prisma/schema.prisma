@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  createdAt DateTime @default(now())
+  channel   Channel?
+  videos    Video[]
+  watchHistory    WatchHistory[]
+}
+
+
+model Channel {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  slug            String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @unique
+  subscriber_count Int      @default(0)
+  createdAt       DateTime @default(now())
+  videos          Video[]
+}
+
+model Video {
+  id              String         @id @default(uuid())
+  title           String
+  description     String?
+  status          VideoStatus    @default(PROCESSING)
+  category        VideoCategory  @default(GAMING)
+  creator         User           @relation(fields: [creatorId], references: [id])
+  creatorId       String
+  channel         Channel        @relation(fields: [channelId], references: [id])
+  channelId       String
+  thumbnail_url    String?
+  videoUrls       Json?
+  view_count       Int            @default(0)
+  createdAt       DateTime       @default(now())
+  watchHistory    WatchHistory[]
+}
+
+model WatchHistory {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  video      Video    @relation(fields: [videoId], references: [id])
+  videoId    String
+  timestamp  Float    @default(0)
+  watchedAt  DateTime @default(now())
+
+  @@unique([userId, videoId])
+  
+
+}
+
+enum VideoStatus {
+  PROCESSING
+  TRANSCODED
+  FAILED
+}
+
+enum VideoCategory {
+  GAMING
+  EDUCATION
+  TECHNOLOGY
+}
