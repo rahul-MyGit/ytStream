@@ -27,7 +27,7 @@ app.get('/health', (req, res) => {
 });
 const wss = new ws_1.WebSocketServer({
     server,
-    path: '/server',
+    path: '/',
     clientTracking: true,
 });
 const clients = new Map();

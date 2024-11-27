@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from 'uuid'
 import { Queue } from "bullmq";
+import { broadcastTimestamp } from "../server/server";
 
 const prisma = new PrismaClient();
 
@@ -166,45 +167,52 @@ export const GetVideoData = async (req: Request, res: Response) => {
 }
 
 export const updateTimestamp = async (req: Request, res: Response) => {
-    async (req: Request, res: Response) => {
-        const { videoId } = req.params;
-        const { timestamp } = req.body;
+    const { videoId } = req.params;
+    const { timestamp } = req.body;
 
-        try {
-
-            if(!timestamp){
-                res.status(400).json({
-                    message: 'timestamp is not present'
-                });
-            }
-
-            const watchHistory = await prisma.watchHistory.upsert({
-                where: {
-                    userId_videoId: {
-                        userId: req.user!.id,
-                        videoId: videoId
-                    }
-                },
-                update: { timestamp },
-                create: {
-                    userId: req.user!.id,
-                    videoId: videoId,
-                    timestamp
-                }
+    try {
+        if (typeof timestamp !== 'number' || timestamp < 0) {
+            res.status(400).json({
+                error: 'Invalid timestamp'
             });
-
-            if(!watchHistory){
-                res.status(400).json({
-                    error: 'history not present'
-                });
-                return
-            }
-
-            res.status(201).json({ message: 'Timestamp updated' });
             return;
-        } catch (error) {
-            res.status(400).json({ error: 'Invalid timestamp' });
-            return
         }
+
+        const video = await prisma.video.findUnique({
+            where: { id: videoId }
+        });
+
+        if (!video) {
+            res.status(404).json({
+                error: 'Video not found'
+            });
+            return;
+        }
+
+        const watchHistory = await prisma.watchHistory.upsert({
+            where: {
+                userId_videoId: {
+                    userId: req.user!.id,
+                    videoId
+                }
+            },
+            update: { timestamp },
+            create: {
+                userId: req.user!.id,
+                videoId,
+                timestamp
+            }
+        });
+
+        broadcastTimestamp(videoId, timestamp, req.user!.id);
+
+        res.status(200).json({ 
+            message: 'Timestamp updated',
+            timestamp: watchHistory.timestamp 
+        });
+        return;
+    } catch (error) {
+        console.error('Error updating timestamp:', error);
+        res.status(500).json({ error: 'Failed to update timestamp' });
     }
-}
+};
