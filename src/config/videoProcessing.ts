@@ -1,6 +1,7 @@
 import Ffmpeg from "fluent-ffmpeg";
 import { PrismaClient } from "@prisma/client";
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Worker } from 'bullmq';
 
 const prisma = new PrismaClient();
 
